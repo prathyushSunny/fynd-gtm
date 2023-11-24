@@ -1,7 +1,7 @@
 /* --------
 Documentation: https://gofynd.quip.com/Lu4pAbvzN0Uu/GTM-Extension
 Events Reference: https://partners.fynd.com/help/docs/partners/themes/events
-CUSTOM EVENTS - need to be fired from the Theme repo
+CUSTOM EVENTS - Need to be fired from the Theme repo (How to? - Check the documentation above)
 -------- */
 
 const GTM_EVENT_KEYS = {
@@ -40,6 +40,21 @@ const GTM_UTILS = {
         quantity: cartItem?.quantity,
       };
     });
+  },
+  getAllCookies: () => {
+    const cookies = {};
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(';');
+
+    for (let i = 0; i < cookieArray.length; i++) {
+      const cookie = cookieArray[i].trim();
+      const separatorIndex = cookie.indexOf('=');
+      const cookieName = cookie.substring(0, separatorIndex);
+      const cookieValue = cookie.substring(separatorIndex + 1);
+      cookies[cookieName] = cookieValue;
+    }
+
+    return cookies;
   },
   getExistingCartItems: () =>
     JSON.parse(localStorage.getItem("m_usercart")) || {},
@@ -314,21 +329,8 @@ const GTM_FUNCTIONS = {
     };
   },
   PLP_PRODUCT_CLICK: (eventData) => {
-    function getCookie(cookieName) {
-      const name = cookieName + "=";
-      const decodedCookie = decodeURIComponent(document.cookie);
-      const cookieArray = decodedCookie.split(';');
-
-      for(let i = 0; i < cookieArray.length; i++) {
-        let cookie = cookieArray[i].trim();
-        if (cookie.indexOf(name) === 0) {
-          return cookie.substring(name.length, cookie.length);
-        }
-      }
-
-      return null; // Return null if the cookie is not found
-    }
-    const userToken = FPI?.state?.user?.user_id ?? getCookie('anonymous_id') ?? '';
+    const allCookies = GTM_UTILS.getAllCookies();
+    const userToken = FPI?.state?.user?.user_id ?? allCookies?.['_ALGOLIA'] ?? '';
     return {
       userToken,
       index: eventData?.product?._custom_json?.["algolia_index_name"],
