@@ -53,7 +53,6 @@ const GTM_UTILS = {
       const cookieValue = cookie.substring(separatorIndex + 1);
       cookies[cookieName] = cookieValue;
     }
-
     return cookies;
   },
   getExistingCartItems: () =>
@@ -330,7 +329,7 @@ const GTM_FUNCTIONS = {
   },
   PLP_PRODUCT_CLICK: (eventData) => {
     const allCookies = GTM_UTILS.getAllCookies();
-    const userToken = FPI?.state?.user?.user_id ?? allCookies?.['_ALGOLIA'] ?? '';
+    const userToken = FPI?.state?.user?._data?.user?.user_id ?? allCookies?.['_ALGOLIA'] ?? '';
     return {
       userToken,
       index: eventData?.product?._custom_json?.["algolia_index_name"],
