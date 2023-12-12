@@ -103,7 +103,7 @@ const GTM_FUNCTIONS = {
   ADD_PAYMENT_INFORMATION: (eventData) => ({
     event: "AddPaymentInfo",
     code: eventData?.payment?.payment_type,
-    event_id: eventData.cart?.cart_id,
+    event_id: eventData?.cart?.cart_id,
   }),
   CART_ADD: (eventData, isFromCartUpdate = false) => {
     let cartProducts = GTM_UTILS.getExistingCartItems()?.value;
