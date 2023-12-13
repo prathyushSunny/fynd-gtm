@@ -13,18 +13,20 @@ const GTM_EVENT_KEYS = {
   CART_VIEW: "cart.view",
   CHECKOUT: "order.checkout",
   COLLECTION_LISTING: "collection_list.view",
+  CUSTOM_PRODUCT_LISTING: "custom.product_list.view", //SEPHORA__CUSTOM_EVENT
   LOGIN: "user.login",
   ORDER_PROCESSED: "order.processed",
+  PAGE_LOAD: "custom.page.onLoad", //SEPHORA__CUSTOM_EVENT
   PINCODE_SERVICEABILITY: "pincode.serviceablility",
   PLP_PRODUCT_CLICK: "custom.productClick", // CUSTOM_EVENT
   PRODUCT_COMPARE_ADD: "compare.add",
   PRODUCT_COMPARE_REMOVE: "compare.remove",
   PRODUCT_DESCRIPTION: "product.view",
-  PRODUCT_LISTING: "product_list.view",
+  // PRODUCT_LISTING: "product_list.view", // SEPHORA__USE_CASE
   SEARCH_PRODUCT: "search.product",
   WISHLIST_ADD: "wishlist.add",
   WISHLIST_REMOVE: "wishlist.remove",
-};
+}; 
 
 const GTM_UTILS = {
   getExistingCartItemsGtm: () => {
@@ -266,6 +268,30 @@ const GTM_FUNCTIONS = {
       },
     };
   },
+  CUSTOM_PRODUCT_LISTING: (eventData) => {
+    const allCookies = GTM_UTILS.getAllCookies();
+    return {
+      event: "impressionSent",
+      action: "Product Impression",
+      label: "Product List page",
+      ecommerce: {
+        currencyCode: "INR",
+        index: eventData.items?.[0]?._custom_json?.["algolia_index_name"],
+        queryID: eventData.items?.[0]?._custom_json?.["algolia_query_id"],
+        anonymous_user_id: allCookies?.['_ALGOLIA'],
+        user_id: FPI?.state?.user?._data?.user?.user_id || null,
+        impressions: eventData.items.map((item, index) => ({
+          // index: item?._custom_json?.["algolia_index_name"],
+          // queryID: item?._custom_json?.["algolia_query_id"],
+          name: item?.name,
+          id: item?.uid?.toString(),
+          price: item?.price?.effective?.min?.toString(),
+          category: item?.categories?.[0]?.name?.toString(),
+          position: item?.productPosition ?? index + 1,
+        })),
+      },
+    };
+  },
   LOGIN: (eventData) => {
     const gtm = {
       userid: eventData?.user_id,
@@ -322,6 +348,17 @@ const GTM_FUNCTIONS = {
         },
       },
     };
+  },
+  PAGE_LOAD: () => {
+    const allCookies = GTM_UTILS.getAllCookies();
+    return {
+      event: "pageLoad",
+      action: "pageLoad",
+      ecommerce: {
+        anonymous_user_id: allCookies?.['_ALGOLIA'],
+        user_id: FPI?.state?.user?._data?.user?.user_id || null,
+      },
+    }
   },
   PLP_PRODUCT_CLICK: (eventData) => {
     const allCookies = GTM_UTILS.getAllCookies();
@@ -380,6 +417,8 @@ const GTM_FUNCTIONS = {
       ecommerce: {
         currencyCode: "INR",
         impressions: eventData.items.map((item, index) => ({
+          index: item?._custom_json?.["algolia_index_name"],
+          queryID: item?._custom_json?.["algolia_query_id"],
           name: item?.name,
           id: item?.uid?.toString(),
           price: item?.price?.effective?.min?.toString(),
@@ -435,7 +474,7 @@ function initializeEvent(EVENT_KEY) {
   let getGtmData = GTM_FUNCTIONS?.[EVENT_KEY];
   if (!gtmEventKey || !getGtmData) return;
   FPI.event.on(gtmEventKey, async (eventData) => {
-    console.log(eventData);
+    console.log(gtmEventKey, eventData);
     //Checkout step 1-3
     if (gtmEventKey === "order.checkout" || gtmEventKey === "order.processed") {
       GTM_UTILS.cartItems = eventData;
