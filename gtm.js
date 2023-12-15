@@ -55,8 +55,7 @@ const GTM_UTILS = {
     }
     return cookies;
   },
-  getExistingCartItems: () =>
-    JSON.parse(localStorage.getItem("m_usercart")) || {},
+  getExistingCartItems: () => window.FPI.state.cart._data.all_cart_data || {},
   getViewCartData: () => {
     const existingCartItems =
       JSON.parse(localStorage.getItem("m_usercart")) || {};
