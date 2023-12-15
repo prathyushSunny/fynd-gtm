@@ -14,6 +14,7 @@ const GTM_EVENT_KEYS = {
   CHECKOUT: "order.checkout",
   COLLECTION_LISTING: "collection_list.view",
   CUSTOM_PRODUCT_LISTING: "custom.product_list.view", //SEPHORA__CUSTOM_EVENT
+  DY_CART_ADD: "custom.DY.cart.newProduct", //SEPHORA__CUSTOM_DY_CART_ADD
   LOGIN: "user.login",
   ORDER_PROCESSED: "order.processed",
   PAGE_LOAD: "custom.page.onLoad", //SEPHORA__CUSTOM_EVENT
@@ -289,6 +290,34 @@ const GTM_FUNCTIONS = {
           category: item?.categories?.[0]?.name?.toString(),
           position: item?.productPosition ?? index + 1,
         })),
+      },
+    };
+  },
+  DY_CART_ADD: (eventData) => {
+    const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
+    return {
+      event: "addToCart",
+      category: eventData?.products?.[0]?.category?.name,
+      action: "addToCart",
+      ecommerce: {
+        currencyCode: eventData?.products?.[0]?.price?.currency_code,
+        add: {
+          actionField: {
+            revenue: eventData?.products?.[0]?.price_per_unit?.base?.effective,
+            action: "add",
+          },
+          products: [
+            {
+              name: eventData?.products?.[0]?.name,
+              id: eventData?.products?.[0]?.uid.toString(),
+              price: eventData?.products?.[0]?.price_per_unit?.base?.effective,
+              variant: eventData?.products?.[0]?.size?.toString(),
+              category: eventData?.products?.[0]?.category?.name,
+              quantity: 1,
+            },
+          ],
+          cart_products: cartProductsGtm,
+        },
       },
     };
   },
