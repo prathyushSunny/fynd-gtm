@@ -55,10 +55,9 @@ const GTM_UTILS = {
     }
     return cookies;
   },
-  getExistingCartItems: () => window.FPI.state.cart._data.all_cart_data || {},
+  getExistingCartItems: () => JSON.parse(localStorage.getItem("m_usercart")) || {},
   getViewCartData: () => {
-    const existingCartItems =
-      JSON.parse(localStorage.getItem("m_usercart")) || {};
+    const existingCartItems = GTM_UTILS.getExistingCartItems();
     const getProductDiscount = (item) => {
       const discount = item?.discount;
       if (!discount) return 0;
