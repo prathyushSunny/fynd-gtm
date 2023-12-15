@@ -104,7 +104,6 @@ const GTM_FUNCTIONS = {
     event_id: eventData?.cart?.cart_id,
   }),
   CART_ADD: (eventData, isFromCartUpdate = false) => {
-    let cartProducts = GTM_UTILS.getExistingCartItems()?.value;
     const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
     return {
       event: "addToCart",
