@@ -90,6 +90,7 @@ const GTM_UTILS = {
       ? Math.round(effectivePrice / quantity)
       : effectivePrice;
   },
+  cartItems: {}
 };
 
 const GTM_FUNCTIONS = {
@@ -199,7 +200,6 @@ const GTM_FUNCTIONS = {
     };
   },
   CHECKOUT: (eventData, step) => {
-    console.log("CHECKOUTTTT", eventData, cartItems);
     let actionField;
     switch (step) {
       case 1:
@@ -237,7 +237,7 @@ const GTM_FUNCTIONS = {
       case 5:
         actionField = {
           step: "5",
-          cart_amount: cartItems?.breakup_values?.display?.[0]?.value,
+          cart_amount: GTM_UTILS.cartItems?.breakup_values?.display?.[0]?.value,
           option: eventData?.payment?.payment_type,
           action: "checkout",
         };
@@ -248,7 +248,7 @@ const GTM_FUNCTIONS = {
       ecommerce: {
         checkout: {
           actionField,
-          products: cartItems?.products?.map((item, index) => ({
+          products: GTM_UTILS.cartItems?.products?.map((item, index) => ({
             name: `${item?.name}|${item?.uid}`,
             id: item?.uid,
             pid: item?.uid?.toString(),
@@ -281,7 +281,6 @@ const GTM_FUNCTIONS = {
     return gtm;
   },
   ORDER_PROCESSED: (eventData) => {
-    console.log("processed dataaaa", cartItems, eventData);
     return {
       event: "transaction",
       ecommerce: {
@@ -303,7 +302,7 @@ const GTM_FUNCTIONS = {
             // coupon: "TBD!",
             action: "purchase",
           },
-          products: cartItems?.items?.map((item, index) => ({
+          products: GTM_UTILS.cartItems?.items?.map((item, index) => ({
             name: `${item?.name}`,
             discount_percentage: item?.discount ?? 0,
             variant: item?.size?.toString(),
@@ -430,8 +429,6 @@ const GTM_FUNCTIONS = {
   }),
 };
 
-let cartItems;
-
 // ** MAIN EXECUTION **
 function initializeEvent(EVENT_KEY) {
   let gtmEventKey = GTM_EVENT_KEYS?.[EVENT_KEY];
@@ -441,7 +438,7 @@ function initializeEvent(EVENT_KEY) {
     console.log(eventData);
     //Checkout step 1-3
     if (gtmEventKey === "order.checkout" || gtmEventKey === "order.processed") {
-      cartItems = eventData;
+      GTM_UTILS.cartItems = eventData;
     }
     if (gtmEventKey === "order.checkout") {
       for (let step = 1; step <= 3; step++) {
