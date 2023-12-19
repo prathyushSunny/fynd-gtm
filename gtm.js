@@ -27,7 +27,7 @@ const GTM_EVENT_KEYS = {
   SEARCH_PRODUCT: "search.product",
   WISHLIST_ADD: "wishlist.add",
   WISHLIST_REMOVE: "wishlist.remove",
-}; 
+};
 
 const GTM_UTILS = {
   getExistingCartItemsGtm: () => {
@@ -93,7 +93,14 @@ const GTM_UTILS = {
       ? Math.round(effectivePrice / quantity)
       : effectivePrice;
   },
-  cartItems: {}
+  cartItems: {},
+  bagListenerAttached: false,
+  addToBagQuantity: 1,
+  getBagQuantity: () => {
+    const quantityCopy = GTM_UTILS.addToBagQuantity || 1;
+    GTM_UTILS.addToBagQuantity = 1;
+    return quantityCopy;
+  }
 };
 
 const GTM_FUNCTIONS = {
@@ -131,7 +138,7 @@ const GTM_FUNCTIONS = {
                 GTM_UTILS.getPricePerUnit(eventData),
               variant: eventData?.products?.[0]?.size?.toString(),
               category: eventData?.products?.[0]?.category?.name,
-              quantity: 1,
+              quantity: GTM_UTILS.getBagQuantity(),
             },
           ],
           cart_products: cartProductsGtm,
@@ -502,6 +509,12 @@ function initializeEvent(EVENT_KEY) {
   let gtmEventKey = GTM_EVENT_KEYS?.[EVENT_KEY];
   let getGtmData = GTM_FUNCTIONS?.[EVENT_KEY];
   if (!gtmEventKey || !getGtmData) return;
+  if (!GTM_UTILS.bagListenerAttached) {
+    GTM_UTILS.bagListenerAttached = true;
+    document.addEventListener('addToBagClicked', (data) => {
+      GTM_UTILS.addToBagQuantity = data?.detail?.quantity || 1;
+    })
+  }
   FPI.event.on(gtmEventKey, async (eventData) => {
     console.log(gtmEventKey, eventData);
     //Checkout step 1-3
