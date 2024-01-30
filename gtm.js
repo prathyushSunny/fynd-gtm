@@ -149,7 +149,6 @@ const GTM_FUNCTIONS = {
     };
   },
   CART_REMOVE: (eventData, isFromCartUpdate = false) => {
-    let cartProducts = GTM_UTILS.getExistingCartItems()?.value;
     const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
     return {
       event: "removeFromCart",
