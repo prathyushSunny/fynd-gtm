@@ -37,6 +37,7 @@ const GTM_UTILS = {
       return {
         name: cartItem?.product?.name,
         productId: cartItem?.product?.uid?.toString(),
+        brand: cartItem?.product?.brand,
         itemPrice: cartItem?.price_per_unit?.base?.effective,
         mrp: cartItem?.price_per_unit?.base?.effective,
         variant: cartItem?.article?.size?.toString(),
@@ -138,6 +139,7 @@ const GTM_FUNCTIONS = {
               price:
                 eventData?.products?.[0]?.price_per_unit?.base?.effective ??
                 GTM_UTILS.getPricePerUnit(eventData),
+              brand: eventData?.products?.[0]?.brand?.name,
               variant: eventData?.products?.[0]?.size?.toString(),
               category: eventData?.products?.[0]?.category?.name,
               quantity: GTM_UTILS.getBagQuantity(),
@@ -168,6 +170,7 @@ const GTM_FUNCTIONS = {
               price: isFromCartUpdate
                 ? eventData?.products?.[0]?.price_per_unit?.base?.effective
                 : eventData?.products?.[0]?.price?.effective,
+              brand: eventData?.products?.[0]?.brand?.name,
               variant: eventData?.products?.[0]?.size?.toString(),
               category: eventData?.products?.[0]?.category?.name,
               quantity: isFromCartUpdate
@@ -319,6 +322,7 @@ const GTM_FUNCTIONS = {
               name: eventData?.products?.[0]?.name,
               id: eventData?.products?.[0]?.uid.toString(),
               price: eventData?.products?.[0]?.price_per_unit?.base?.effective,
+              brand: eventData?.products?.[0]?.brand,
               variant: eventData?.products?.[0]?.size?.toString(),
               category: eventData?.products?.[0]?.category?.name,
               quantity: 1,
@@ -479,6 +483,10 @@ const GTM_FUNCTIONS = {
             {
               name: eventData?.item?.name,
               id: eventData?.item?.uid?.toString(),
+            brand: {
+              name: eventData?.item?.brand?.name,
+              uid: eventData?.item?.brand?.uid,
+            },
               category: eventData?.item?.categories?.[0]?.name,
               position: 1,
               price: eventData?.item?.price?.effective?.max,
@@ -500,6 +508,10 @@ const GTM_FUNCTIONS = {
             {
               name: eventData?.item?.name,
               id: eventData?.item?.uid?.toString(),
+            brand: {
+              name: eventData?.item?.brand?.name,
+              uid: eventData?.item?.brand?.uid,
+            },
               category: eventData?.item?.categories?.[0]?.name,
               position: 1,
               price: eventData?.item?.price?.effective?.max,
