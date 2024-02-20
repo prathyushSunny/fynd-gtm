@@ -23,6 +23,7 @@ const GTM_EVENT_KEYS = {
   PRODUCT_COMPARE_ADD: "compare.add",
   PRODUCT_COMPARE_REMOVE: "compare.remove",
   PRODUCT_DESCRIPTION: "product.view",
+  CUSTOM_PRODUCT_DESCRIPTION: "custom.product.view", //SEPHORA__CUSTOM_EVENT
   // PRODUCT_LISTING: "product_list.view", // SEPHORA__USE_CASE
   SEARCH_PRODUCT: "search.product",
   WISHLIST_ADD: "wishlist.add",
@@ -37,11 +38,16 @@ const GTM_UTILS = {
       return {
         name: cartItem?.product?.name,
         productId: cartItem?.product?.uid?.toString(),
-        brand: cartItem?.product?.brand,
+        brand: cartItem?.product?.brand?.name,
         itemPrice: cartItem?.price_per_unit?.base?.effective,
         mrp: cartItem?.price_per_unit?.base?.effective,
         variant: cartItem?.article?.size?.toString(),
         quantity: cartItem?.quantity,
+        category: {
+          item_category: cartItem?.product?.attributes?.['custom-attribute-1'],
+          item_category_1: cartItem?.product?.attributes?.['custom-attribute-2'],
+          item_category_2: cartItem?.product?.attributes?.['custom-attribute-3']
+        },
       };
     });
   },
@@ -101,7 +107,8 @@ const GTM_UTILS = {
     const quantityCopy = GTM_UTILS.addToBagQuantity || 1;
     GTM_UTILS.addToBagQuantity = 1;
     return quantityCopy;
-  }
+  },
+  cartItemsBeforeRemoveFromCart: {}
 };
 
 const GTM_FUNCTIONS = {
@@ -119,10 +126,19 @@ const GTM_FUNCTIONS = {
   },
   CART_ADD: (eventData, isFromCartUpdate = false) => {
     const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
+    const existingCartItems = GTM_UTILS.getExistingCartItems();
+    GTM_UTILS.cartItemsBeforeRemoveFromCart = existingCartItems;
+    const presentCartItem = existingCartItems?.value?.items?.filter((item) => {
+      return item.product?.item_code === eventData?.products?.[0]?.item_code;
+    })?.[0] || {};
     return {
       event: "addToCart",
-      category: eventData?.products?.[0]?.category?.name,
       action: "addToCart",
+      category: {
+        item_category: presentCartItem?.product?.attributes?.['custom-attribute-1'],
+        item_category_1: presentCartItem?.product?.attributes?.['custom-attribute-2'],
+        item_category_2: presentCartItem?.product?.attributes?.['custom-attribute-3']
+      },
       ecommerce: {
         currencyCode: eventData?.products?.[0]?.price?.currency_code,
         add: {
@@ -141,7 +157,11 @@ const GTM_FUNCTIONS = {
                 GTM_UTILS.getPricePerUnit(eventData),
               brand: eventData?.products?.[0]?.brand?.name,
               variant: eventData?.products?.[0]?.size?.toString(),
-              category: eventData?.products?.[0]?.category?.name,
+              category: {
+                item_category: presentCartItem?.product?.attributes?.['custom-attribute-1'],
+                item_category_1: presentCartItem?.product?.attributes?.['custom-attribute-2'],
+                item_category_2: presentCartItem?.product?.attributes?.['custom-attribute-3']
+              },
               quantity: GTM_UTILS.getBagQuantity(),
             },
           ],
@@ -152,6 +172,11 @@ const GTM_FUNCTIONS = {
   },
   CART_REMOVE: (eventData, isFromCartUpdate = false) => {
     const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
+    const existingCartItems = GTM_UTILS.cartItemsBeforeRemoveFromCart;
+    const presentCartItem = existingCartItems?.value?.items?.filter((item) => {
+      return item.product?.item_code === eventData?.products?.[0]?.item_code;
+    })?.[0] || {};
+    GTM_UTILS.cartItemsBeforeRemoveFromCart = GTM_UTILS?.getExistingCartItems();
     return {
       event: "removeFromCart",
       action: "removeFromCart",
@@ -172,7 +197,11 @@ const GTM_FUNCTIONS = {
                 : eventData?.products?.[0]?.price?.effective,
               brand: eventData?.products?.[0]?.brand?.name,
               variant: eventData?.products?.[0]?.size?.toString(),
-              category: eventData?.products?.[0]?.category?.name,
+              category: {
+                item_category: presentCartItem?.product?.attributes?.['custom-attribute-1'],
+                item_category_1: presentCartItem?.product?.attributes?.['custom-attribute-2'],
+                item_category_2: presentCartItem?.product?.attributes?.['custom-attribute-3']
+              },
               quantity: isFromCartUpdate
                 ? 1
                 : eventData?.products?.[0]?.quantity?.current,
@@ -195,6 +224,7 @@ const GTM_FUNCTIONS = {
   CART_VIEW: (eventData) => {
     const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
     const existingCartData = GTM_UTILS.getExistingCartItems();
+    GTM_UTILS.cartItemsBeforeRemoveFromCart = existingCartData;
     const cartIsEmpty =
       !existingCartData || !existingCartData?.value?.items?.length;
     return {
@@ -296,9 +326,14 @@ const GTM_FUNCTIONS = {
           // index: item?._custom_json?.["algolia_index_name"],
           // queryID: item?._custom_json?.["algolia_query_id"],
           name: item?.name,
+          brand: item?.brand?.name,
           id: item?.uid?.toString(),
           price: item?.price?.effective?.min?.toString(),
-          category: item?.categories?.[0]?.name?.toString(),
+          category: {
+            item_category: item?.attributes?.['custom-attribute-1'],
+            item_category_1: item?.attributes?.['custom-attribute-2'],
+            item_category_2: item?.attributes?.['custom-attribute-3']
+          },
           position: item?.productPosition ?? index + 1,
         })),
       },
@@ -433,6 +468,28 @@ const GTM_FUNCTIONS = {
       },
     }
   },
+  CUSTOM_PRODUCT_DESCRIPTION: (eventData) => ({
+    event: "ProductDetail",
+    action: "Product Detail",
+    category: eventData?.product?.category?.uid?.toString(),
+    ecommerce: {
+      detail: {
+        products: [
+          {
+            name: eventData?.product?.name,
+            id: eventData?.product?.uid?.toString(),
+            price: eventData?.product?.price?.min?.toString(),
+            category: {
+              item_category: eventData?.product?.attributes?.['custom-attribute-1'],
+              item_category_1: eventData?.product?.attributes?.['custom-attribute-2'],
+              item_category_2: eventData?.product?.attributes?.['custom-attribute-3']
+            },
+            brand: eventData?.product?.brand?.name
+          },
+        ],
+      },
+    },
+  }),
   PRODUCT_DESCRIPTION: (eventData) => {
     return {
       event: "ProductDetail",
@@ -446,6 +503,7 @@ const GTM_FUNCTIONS = {
               id: eventData?.product?.uid?.toString(),
               price: eventData?.product?.price?.min?.toString(),
               category: eventData?.product?.category?.uid?.toString(),
+            brand: eventData?.product?.brand?.name
             },
           ],
         },
@@ -483,11 +541,12 @@ const GTM_FUNCTIONS = {
             {
               name: eventData?.item?.name,
               id: eventData?.item?.uid?.toString(),
-            brand: {
-              name: eventData?.item?.brand?.name,
-              uid: eventData?.item?.brand?.uid,
-            },
-              category: eventData?.item?.categories?.[0]?.name,
+              brand: eventData?.item?.brand?.name,
+              category: {
+                item_category: eventData?.item?.attributes?.['custom-attribute-1'],
+                item_category_1: eventData?.item?.attributes?.['custom-attribute-2'],
+                item_category_2: eventData?.item?.attributes?.['custom-attribute-3']
+              },
               position: 1,
               price: eventData?.item?.price?.effective?.max,
             },
@@ -534,6 +593,8 @@ function initializeEvent(EVENT_KEY) {
       GTM_UTILS.addToBagQuantity = data?.detail?.quantity || 1;
     })
   }
+  GTM_UTILS.cartItemsBeforeRemoveFromCart = GTM_UTILS?.getExistingCartItems() || {};
+  
   FPI.event.on(gtmEventKey, async (eventData) => {
     console.log(gtmEventKey, eventData);
     //Checkout step 1-3
