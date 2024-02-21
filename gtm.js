@@ -99,11 +99,13 @@ const GTM_FUNCTIONS = {
       eventData,
     };
   },
-  ADD_PAYMENT_INFORMATION: (eventData) => ({
-    event: "AddPaymentInfo",
-    code: eventData?.payment?.payment_type,
-    event_id: eventData?.cart?.cart_id,
-  }),
+  ADD_PAYMENT_INFORMATION: (eventData) => {
+    return {
+      event: "AddPaymentInfo",
+      code: eventData?.payment?.payment_type,
+      event_id: eventData?.cart?.cart_id,
+    };
+  },
   CART_ADD: (eventData, isFromCartUpdate = false) => {
     const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
     return {
@@ -354,23 +356,25 @@ const GTM_FUNCTIONS = {
       },
     }
   },
-  PRODUCT_DESCRIPTION: (eventData) => ({
-    event: "ProductDetail",
-    action: "Product Detail",
-    category: eventData?.product?.category?.uid?.toString(),
-    ecommerce: {
-      detail: {
-        products: [
-          {
-            name: eventData?.product?.name,
-            id: eventData?.product?.uid?.toString(),
-            price: eventData?.product?.price?.min?.toString(),
-            category: eventData?.product?.category?.uid?.toString(),
-          },
-        ],
-      },
-    },
-  }),
+  PRODUCT_DESCRIPTION: (eventData) => {
+    return {
+      event: "ProductDetail",
+      action: "Product Detail",
+      category: eventData?.product?.category?.uid?.toString(),
+      ecommerce: {
+        detail: {
+          products: [
+            {
+              name: eventData?.product?.name,
+              id: eventData?.product?.uid?.toString(),
+              price: eventData?.product?.price?.min?.toString(),
+              category: eventData?.product?.category?.uid?.toString(),
+            },
+          ],
+        },
+      }
+    }
+  },
   PRODUCT_LISTING: (eventData) => {
     return {
       event: "impressionSent",
@@ -388,44 +392,48 @@ const GTM_FUNCTIONS = {
       },
     };
   },
-  WISHLIST_ADD: (eventData) => ({
-    event: "addToWishlist",
-    category: eventData?.item?.categories?.[0]?.name,
-    action: "addToWishlist",
-    ecommerce: {
-      currencyCode: "INR",
-      add: {
-        products: [
-          {
-            name: eventData?.item?.name,
-            id: eventData?.item?.uid?.toString(),
-            category: eventData?.item?.categories?.[0]?.name,
-            position: 1,
-            price: eventData?.item?.price?.effective?.max,
-          },
-        ],
+  WISHLIST_ADD: (eventData) => {
+    return {
+      event: "addToWishlist",
+      category: eventData?.item?.categories?.[0]?.name,
+      action: "addToWishlist",
+      ecommerce: {
+        currencyCode: "INR",
+        add: {
+          products: [
+            {
+              name: eventData?.item?.name,
+              id: eventData?.item?.uid?.toString(),
+              category: eventData?.item?.categories?.[0]?.name,
+              position: 1,
+              price: eventData?.item?.price?.effective?.max,
+            },
+          ],
+        },
+      }
+    }
+  },
+  WISHLIST_REMOVE: (eventData) => {
+    return {
+      event: "removeFromWishlist",
+      category: eventData?.item?.categories?.[0]?.name,
+      action: "removeFromWishlist",
+      ecommerce: {
+        currencyCode: "INR",
+        add: {
+          products: [
+            {
+              name: eventData?.item?.name,
+              id: eventData?.item?.uid?.toString(),
+              category: eventData?.item?.categories?.[0]?.name,
+              position: 1,
+              price: eventData?.item?.price?.effective?.max,
+            },
+          ],
+        },
       },
-    },
-  }),
-  WISHLIST_REMOVE: (eventData) => ({
-    event: "removeFromWishlist",
-    category: eventData?.item?.categories?.[0]?.name,
-    action: "removeFromWishlist",
-    ecommerce: {
-      currencyCode: "INR",
-      add: {
-        products: [
-          {
-            name: eventData?.item?.name,
-            id: eventData?.item?.uid?.toString(),
-            category: eventData?.item?.categories?.[0]?.name,
-            position: 1,
-            price: eventData?.item?.price?.effective?.max,
-          },
-        ],
-      },
-    },
-  }),
+    }
+  },
 };
 
 // ** MAIN EXECUTION **
