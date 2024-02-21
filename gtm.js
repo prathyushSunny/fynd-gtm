@@ -117,13 +117,11 @@ const GTM_FUNCTIONS = {
       eventData,
     };
   },
-  ADD_PAYMENT_INFORMATION: (eventData) => {
-    return {
-      event: "AddPaymentInfo",
-      code: eventData?.payment?.payment_type,
-      event_id: eventData?.cart?.cart_id,
-    };
-  },
+  ADD_PAYMENT_INFORMATION: (eventData) => ({
+    event: "AddPaymentInfo",
+    code: eventData?.payment?.payment_type,
+    event_id: eventData?.cart?.cart_id,
+  }),
   CART_ADD: (eventData, isFromCartUpdate = false) => {
     const cartProductsGtm = GTM_UTILS.getExistingCartItemsGtm();
     const existingCartItems = GTM_UTILS.getExistingCartItems();
@@ -414,10 +412,11 @@ const GTM_FUNCTIONS = {
             pid: item?.id?.toString(),
             price: item?.price,
             mrp: item?.price,
-            category:
-              item?.l1_categories?.[0] ??
-              item?.l2_categories?.[0] ??
-              item?.l3_category_name,
+            category: {
+              item_category: item?.attributes?.['custom-attribute-1'],
+              item_category_1: item?.attributes?.['custom-attribute-2'],
+              item_category_2: item?.attributes?.['custom-attribute-3']
+            },
             category_id: item?.category?.uid,
             quantity: item?.quantity,
           })),
@@ -468,28 +467,30 @@ const GTM_FUNCTIONS = {
       },
     }
   },
-  CUSTOM_PRODUCT_DESCRIPTION: (eventData) => ({
-    event: "ProductDetail",
-    action: "Product Detail",
-    category: eventData?.product?.category?.uid?.toString(),
-    ecommerce: {
-      detail: {
-        products: [
-          {
-            name: eventData?.product?.name,
-            id: eventData?.product?.uid?.toString(),
-            price: eventData?.product?.price?.min?.toString(),
-            category: {
-              item_category: eventData?.product?.attributes?.['custom-attribute-1'],
-              item_category_1: eventData?.product?.attributes?.['custom-attribute-2'],
-              item_category_2: eventData?.product?.attributes?.['custom-attribute-3']
+  CUSTOM_PRODUCT_DESCRIPTION: (eventData) => {
+    return {
+      event: "ProductDetail",
+      action: "Product Detail",
+      category: eventData?.product?.category?.uid?.toString(),
+      ecommerce: {
+        detail: {
+          products: [
+            {
+              name: eventData?.product?.name,
+              id: eventData?.product?.uid?.toString(),
+              price: eventData?.product?.price?.min?.toString(),
+              category: {
+                item_category: eventData?.product?.attributes?.['custom-attribute-1'],
+                item_category_1: eventData?.product?.attributes?.['custom-attribute-2'],
+                item_category_2: eventData?.product?.attributes?.['custom-attribute-3']
+              },
+              brand: eventData?.product?.brand?.name
             },
-            brand: eventData?.product?.brand?.name
-          },
-        ],
+          ],
+        },
       },
-    },
-  }),
+    };
+  },
   PRODUCT_DESCRIPTION: (eventData) => {
     return {
       event: "ProductDetail",
@@ -503,12 +504,12 @@ const GTM_FUNCTIONS = {
               id: eventData?.product?.uid?.toString(),
               price: eventData?.product?.price?.min?.toString(),
               category: eventData?.product?.category?.uid?.toString(),
-            brand: eventData?.product?.brand?.name
+              brand: eventData?.product?.brand?.name
             },
           ],
         },
-      }
-    }
+      },
+    };
   },
   PRODUCT_LISTING: (eventData) => {
     return {
@@ -552,8 +553,8 @@ const GTM_FUNCTIONS = {
             },
           ],
         },
-      }
-    }
+      },
+    };
   },
   WISHLIST_REMOVE: (eventData) => {
     return {
@@ -567,10 +568,10 @@ const GTM_FUNCTIONS = {
             {
               name: eventData?.item?.name,
               id: eventData?.item?.uid?.toString(),
-            brand: {
-              name: eventData?.item?.brand?.name,
-              uid: eventData?.item?.brand?.uid,
-            },
+              brand: {
+                name: eventData?.item?.brand?.name,
+                uid: eventData?.item?.brand?.uid,
+              },
               category: eventData?.item?.categories?.[0]?.name,
               position: 1,
               price: eventData?.item?.price?.effective?.max,
@@ -578,7 +579,7 @@ const GTM_FUNCTIONS = {
           ],
         },
       },
-    }
+    };
   },
 };
 
